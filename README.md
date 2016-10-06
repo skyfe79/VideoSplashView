@@ -1,0 +1,2 @@
+# VideoSplashView
+VideoSplashKit is VideoSplashView
