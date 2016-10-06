@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "VideoSplashView"
-  s.version      = "1.0.0"
+  s.version      = "1.0.1"
   s.summary      = "VideoSplashView is a simple video view for Splash Scene that contains video."
 
   # This description is used to generate tags and improve search results.
@@ -89,7 +89,7 @@ Pod::Spec.new do |s|
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "VideoSplashView", "VideoSplashView/**/*.{h,m,swift}"
+  s.source_files  = "VideoSplashView", "VideoSplashView/VideoSplashView/**/*.{h,m,swift}"
   s.exclude_files = "Classes/Exclude"
 
   # s.public_header_files = "Classes/**/*.h"
