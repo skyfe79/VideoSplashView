@@ -5,6 +5,9 @@ VideoSplashView is a simple video view for making Splash Scene that contains vid
 ## CocoaPods
 
 ```
+  platform :ios, '9.0'
+  use_frameworks!
+  
   pod 'VideoSplashView', :git => 'https://github.com/skyfe79/VideoSplashView.git', :tag => '1.0.1'
 ```
 
