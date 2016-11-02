@@ -12,6 +12,12 @@ import AVFoundation
 @IBDesignable
 public class VideoSplashView: UIView {
     
+    override public class var layerClass: AnyClass {
+        get {
+            return AVPlayerLayer.self
+        }
+    }
+    
     public var mute : Bool {
         get {
             return player?.isMuted ?? true
@@ -34,15 +40,15 @@ public class VideoSplashView: UIView {
     
     public var loop : Bool = true
     
-    var player : AVPlayer? = nil
+    
     var url : URL? = nil
-    lazy var playerLayer : AVPlayerLayer = {
-        AVPlayerLayer()
-    }()
+    var player : AVPlayer? = nil
+    var playerLayer : AVPlayerLayer? {
+        return self.layer as? AVPlayerLayer
+    }
     
     var currentTime : CMTime = kCMTimeZero
     var imageGenerator : AVAssetImageGenerator? = nil
-    
     
     public override func layoutSubviews() {
         super.layoutSubviews()
@@ -64,30 +70,31 @@ extension VideoSplashView {
     }
     
     fileprivate func initPlayer() {
+        guard let vlayer = self.playerLayer else { return }
+        
         if let vp = player {
-            playerLayer.player = vp
+            vlayer.player = vp
         } else {
             player = AVPlayer()
-            playerLayer.player = player
+            vlayer.player = player
         }
     }
     
     fileprivate func initPlayerLayer() {
-        playerLayer.frame = self.frame
-        playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
-        playerLayer.contentsGravity = kCAGravityResizeAspectFill
-        self.playerLayer.removeFromSuperlayer()
-        self.layer.addSublayer(playerLayer)
+        guard let vlayer = self.playerLayer else { return }
+        vlayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+        vlayer.contentsGravity = kCAGravityResizeAspectFill
     }
     
     fileprivate func clear() {
+        
+        guard let vlayer = self.playerLayer else { return }
+        
         if let vp = player {
             vp.pause()
             vp.replaceCurrentItem(with: nil)
-            playerLayer.removeAllAnimations()
-            playerLayer.removeFromSuperlayer()
             player = nil
-            playerLayer.player = nil
+            vlayer.player = nil
         }
     }
 
@@ -103,8 +110,9 @@ extension VideoSplashView {
         imageGenerator = AVAssetImageGenerator(asset: asset)
         
         if let cgImage = thumbnail(at: CMTimeMake(0, 1)) {
-            self.playerLayer.contents = cgImage
+            self.playerLayer?.contents = cgImage
         }
+        
         NotificationCenter.default.removeObserver(self)
         NotificationCenter.default.addObserver(forName: Notification.Name.AVPlayerItemDidPlayToEndTime, object: vp.currentItem, queue: nil) { [weak self] (noti) in
             
