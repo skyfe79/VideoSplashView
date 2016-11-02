@@ -139,6 +139,7 @@ extension VideoSplashView {
     
     public func stop() {
         clear()
+        NotificationCenter.default.removeObserver(self)
     }
     
     fileprivate func play(at: CMTime) {
