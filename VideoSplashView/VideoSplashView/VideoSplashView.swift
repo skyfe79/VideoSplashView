@@ -82,8 +82,10 @@ extension VideoSplashView {
     
     fileprivate func clear() {
         if let vp = player {
-            vp.replaceCurrentItem(with: nil)
             vp.pause()
+            vp.replaceCurrentItem(with: nil)
+            playerLayer.removeAllAnimations()
+            playerLayer.removeFromSuperlayer()
             player = nil
             playerLayer.player = nil
         }

@@ -18,6 +18,7 @@ class ViewController: UIViewController {
         guard let url = Bundle.main.url(forResource: "splash", withExtension: "mov") else { return }
         videoSplashView.prepareVideo(url: url)
         videoSplashView.mute = true
+        videoSplashView.loop = true
         videoSplashView.play()
     }
     
