@@ -12,22 +12,17 @@ import VideoSplashView
 class ViewController: UIViewController {
     
     @IBOutlet weak var videoSplashView: VideoSplashView!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        guard let url = Bundle.main.url(forResource: "splash", withExtension: "mov") else { return }
-        videoSplashView.mute = true
-        videoSplashView.prepareVideo(url: url)
-    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        guard let url = Bundle.main.url(forResource: "splash", withExtension: "mov") else { return }
+        videoSplashView.prepareVideo(url: url)
+        videoSplashView.mute = true
         videoSplashView.play()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        videoSplashView.pause()
+        videoSplashView.stop()
         super.viewWillDisappear(animated)
     }
 

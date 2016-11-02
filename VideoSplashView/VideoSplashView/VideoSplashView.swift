@@ -14,30 +14,28 @@ public class VideoSplashView: UIView {
     
     public var mute : Bool {
         get {
-            return player.isMuted
+            return player?.isMuted ?? true
         }
         
         set {
-            player.isMuted = newValue
+            player?.isMuted = newValue
         }
     }
     
     public var volume : Float {
         get {
-            return player.volume
+            return player?.volume ?? 0.0
         }
         
         set {
-            player.volume = volume
+            player?.volume = volume
         }
     }
     
     public var loop : Bool = true
     
-    lazy var player : AVPlayer = {
-        AVPlayer()
-    }()
-    
+    var player : AVPlayer? = nil
+    var url : URL? = nil
     lazy var playerLayer : AVPlayerLayer = {
         AVPlayerLayer()
     }()
@@ -45,9 +43,15 @@ public class VideoSplashView: UIView {
     var currentTime : CMTime = kCMTimeZero
     var imageGenerator : AVAssetImageGenerator? = nil
     
+    
     public override func layoutSubviews() {
         super.layoutSubviews()
         setupView()
+    }
+    
+    deinit {
+        clear()
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -55,32 +59,56 @@ public class VideoSplashView: UIView {
 extension VideoSplashView {
     
     fileprivate func setupView() {
-        
+        initPlayer()
+        initPlayerLayer()
+    }
+    
+    fileprivate func initPlayer() {
+        if let vp = player {
+            playerLayer.player = vp
+        } else {
+            player = AVPlayer()
+            playerLayer.player = player
+        }
+    }
+    
+    fileprivate func initPlayerLayer() {
         playerLayer.frame = self.frame
-        playerLayer.player = player
         playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
         playerLayer.contentsGravity = kCAGravityResizeAspectFill
         self.playerLayer.removeFromSuperlayer()
         self.layer.addSublayer(playerLayer)
-        
+    }
+    
+    fileprivate func clear() {
+        if let vp = player {
+            vp.replaceCurrentItem(with: nil)
+            vp.pause()
+            player = nil
+            playerLayer.player = nil
+        }
     }
 
     public func prepareVideo(url: URL) {
-        
+        if player == nil {
+            initPlayer()
+        }
+        guard let vp = player else { return }
+        self.url = url
         let asset = AVAsset(url: url)
         let playerItem = AVPlayerItem(asset: asset)
-        self.player.replaceCurrentItem(with: playerItem)
+        vp.replaceCurrentItem(with: playerItem)
         imageGenerator = AVAssetImageGenerator(asset: asset)
         
         if let cgImage = thumbnail(at: CMTimeMake(0, 1)) {
             self.playerLayer.contents = cgImage
         }
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name.AVPlayerItemDidPlayToEndTime, object: self.player.currentItem, queue: nil) { [weak self] (noti) in
+        NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.addObserver(forName: Notification.Name.AVPlayerItemDidPlayToEndTime, object: vp.currentItem, queue: nil) { [weak self] (noti) in
             
             if self?.loop == true {
-                self?.player.seek(to: kCMTimeZero)
-                self?.player.play()
+                vp.seek(to: kCMTimeZero)
+                vp.play()
             }
         }
         
@@ -88,37 +116,37 @@ extension VideoSplashView {
                                         forName: Notification.Name.UIApplicationDidEnterBackground,
                                         object: nil,
                                         queue: nil) { [weak self] (noti) in
-                                            
-            self?.currentTime = self?.player.currentTime() ?? kCMTimeZero
-            self?.pause()
-            self?.playerLayer.player = nil
+            self?.clear()
         }
         
         NotificationCenter.default.addObserver(
                                         forName: Notification.Name.UIApplicationWillEnterForeground,
                                         object: nil,
                                         queue: nil) { [weak self] (noti) in
-                                            
-            self?.playerLayer.player = nil
-            self?.playerLayer.player = self?.player
-            self?.play(at: self?.currentTime ?? kCMTimeZero)
+            guard let vurl = self?.url else { return }
+            self?.prepareVideo(url: vurl)
+            self?.play()
         }
     }
     
     public func play() {
-        self.player.play()
+        self.player?.play()
     }
     
     public func pause() {
-        self.player.pause()
+        self.player?.pause()
+    }
+    
+    public func stop() {
+        clear()
     }
     
     fileprivate func play(at: CMTime) {
+        guard let vp = player else { return }
+        guard let currentItem = vp.currentItem else { return }
+        if vp.status == .readyToPlay && currentItem.status == .readyToPlay {
             
-        guard let currentItem = player.currentItem else { return }
-        if player.status == .readyToPlay && currentItem.status == .readyToPlay {
-            
-            player.seek(to: at, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero, completionHandler: { [weak self] (finished) in
+            vp.seek(to: at, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero, completionHandler: { [weak self] (finished) in
                 self?.play()
             })
         } else {
