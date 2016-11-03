@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "VideoSplashView"
-  s.version      = "1.0.5"
+  s.version      = "1.0.6"
   s.summary      = "VideoSplashView is a simple video view for Splash Scene that contains video."
 
   # This description is used to generate tags and improve search results.

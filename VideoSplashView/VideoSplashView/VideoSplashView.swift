@@ -78,6 +78,13 @@ extension VideoSplashView {
             player = AVPlayer()
             vlayer.player = player
         }
+        
+        // setup audio session
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(AVAudioSessionCategoryAmbient, with: .mixWithOthers)
+        } catch {
+        }
     }
     
     fileprivate func initPlayerLayer() {
